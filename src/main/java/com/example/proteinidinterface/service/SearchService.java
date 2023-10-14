@@ -7,6 +7,7 @@ import org.springframework.util.StringUtils;
 
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
@@ -15,6 +16,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.Objects;
 
 import apps.mscandb.*;
 import mscanlib.common.*;
@@ -34,7 +36,7 @@ import org.springframework.web.servlet.ModelAndView;
 @Service
 public class SearchService implements DbEngineListener {
 
-    private String	mFilenames[] = null;	//nazwy plikow wejsciowych
+    private String[] mFilenames = null;	//nazwy plikow wejsciowych
     private DbEngineSearchConfig mConfig = null;		//obiekt konfiguracji przeszukania
     private PrintWriter out = null;
 
@@ -44,7 +46,7 @@ public class SearchService implements DbEngineListener {
          * Pobieranie nazwy pliku z danymi
          */
         MultipartFile file = configFormObject.getFile();
-        String fileName = StringUtils.cleanPath(file.getOriginalFilename());
+        String fileName = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
 
         if(!fileName.isEmpty())
         {
@@ -189,6 +191,7 @@ public class SearchService implements DbEngineListener {
             MScanDbOutFileReader reader=new MScanDbOutFileReader(filename,new MsMsScanConfig());
             reader.readFile();
             reader.closeFile();
+            this.out = new PrintWriter("result.txt");
 
             /*
              * Pobranie i wyswietlenie naglowka
@@ -257,10 +260,10 @@ public class SearchService implements DbEngineListener {
                 }
             }
         }
-        catch (MScanException mse)
-        {
+        catch (MScanException mse) {
             System.out.println(mse);
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
         }
-
     }
 }
