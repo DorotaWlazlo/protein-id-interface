@@ -1,6 +1,11 @@
 package com.example.proteinidinterface.service;
 
 import com.example.proteinidinterface.model.ConfigForm;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import mscanlib.ms.db.DbTools;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -119,7 +124,7 @@ public class SearchService implements DbEngineListener {
          * Odczyt plikow z wynikami: zostana zapisane w tym samym katalogu co pliki wejsciowe i beda mialy takie saea nazwy i rozszerzenia .out
          */
         for (int i=0;i<this.mFilenames.length;i++)
-            this.readResultFile(MScanSystemTools.replaceExtension(this.mFilenames[i],"out"),this.out);
+            this.readResultFile(MScanSystemTools.replaceExtension(this.mFilenames[i],"out"));
     }
 
     //
@@ -180,43 +185,11 @@ public class SearchService implements DbEngineListener {
      *
      * @param filename
      */
-    public void readResultFile(String filename,PrintWriter out)
-    {
-        try
-        {
-            /*
-             * Odczyt pliku
-             */
-            System.out.println("Reading file: " + filename);
-            MScanDbOutFileReader reader=new MScanDbOutFileReader(filename,new MsMsScanConfig());
+    public String readResultFile(String filename) {
+        try {
+            MScanDbOutFileReader reader = new MScanDbOutFileReader(filename, new MsMsScanConfig());
             reader.readFile();
             reader.closeFile();
-            this.out = new PrintWriter("result.txt");
-
-            /*
-             * Pobranie i wyswietlenie naglowka
-             */
-            MsMsFileHeader header=reader.getHeader();
-            out.println("\nTitle: " + header.getSearchTitle());
-            out.println("User: " + header.getUser());
-            out.println("User mail: " + header.getUserMail());
-            out.println("Data file: " + header.getMsDataFile());
-
-            //T.R. 27.10.2017 Zmiana sposobu pobierania informacji o bazie danych
-            DB db=header.getDB(0);
-            out.println("Database name: " + db.getDbName());
-            //out.println("Database type: " + DBTools.getDbName(db.getDbType()));
-            out.println("Database version: " + db.getDbVersion());
-            out.println("Database FASTA file: " + db.getDbFilename());
-            out.println("Database Taxonomy: " + db.getTaxonomy());
-
-            out.println("Enzyme: " + header.getEnzyme());
-            out.println("Missed cleavages: " + header.getMissedCleavages());
-            out.println("Instrument: " + header.getInstrumentName());
-            out.println("Parent MMD: " + header.getParentMMDString());
-            out.println("Fragment MMD: " + header.getFragmentMMDString());
-            out.println("Fixed PTMs: " + header.getFixedPTMsString());
-            out.println("Variable PTMs: " + header.getVariablePTMsString());
 
             /*
              * Pobranie map bialek i peptydow
@@ -225,45 +198,87 @@ public class SearchService implements DbEngineListener {
             LinkedHashMap<String,MsMsPeptideHit> peptidesMap=new LinkedHashMap<String,MsMsPeptideHit>();
             reader.createHashes(proteinsMap,peptidesMap);
 
-            //T.R. 27.10.2017 potrzebne do pobrania sekwencji w postaci HTML
+
+            // Create an ObjectMapper to build a JSON structure
+            ObjectMapper objectMapper = new ObjectMapper();
+
+            // Create a JSON object to represent the results
+            ObjectNode jsonResult = JsonNodeFactory.instance.objectNode();
+
+            // Add header information to the JSON
+            MsMsFileHeader header = reader.getHeader();
+            jsonResult.put("Title", header.getSearchTitle());
+            jsonResult.put("User", header.getUser());
+            jsonResult.put("UserMail", header.getUserMail());
+            jsonResult.put("DataFile", header.getMsDataFile());
             PTMSymbolsMap map=header.getVariablePTMsMap();
+            // Add other header fields as needed
 
-            /*
-             * Wyswietlenie wynikow
-             */
-            for (MsMsProteinHit protein : proteinsMap.values())
-            {
-                //informacje o bialku: ID, nazwa, score, liczba peptydow
-                out.println("Protein: " + protein.getId() + "\t" + protein.getName() + "\t" + protein.getScore() + "\t" + protein.getPeptidesCount());
+            // Create a JSON array to store proteins
+            ArrayNode proteinsArray = JsonNodeFactory.instance.arrayNode();
 
-                //Wyswietlenie peptydow bialka
-                for (MsMsPeptideHit peptide : protein.getPeptides().values())
-                {
-                    //T.R. 27.10.2017 Demonstracja sposobu pobrania sekwencji w postaci HTML. Parametry:
-                    //terms - null
-                    //withHeader - jezeli true, to ciag ma tez znaczniki <html> </html>
-                    //bold - pogrubienie
-                    //italic - kursywa
-                    //fontFace - nazwa czcionki
-                    //fontColor - kolor
-                    //symbolsMap - mapa modyfikacji pobrana z naglowka
+            // Iterate through proteins
+            for (MsMsProteinHit protein : proteinsMap.values()) {
+                ObjectNode proteinNode = JsonNodeFactory.instance.objectNode();
+                proteinNode.put("ID", protein.getId());
+                proteinNode.put("Name", protein.getName());
+                proteinNode.put("Score", protein.getScore());
+                proteinNode.put("PeptidesCount", protein.getPeptidesCount());
 
-                    //informacje o peptydzie: sekwencja i masa teoretyczna (wynikajaca z sekwencji)
-                    out.println("\tPeptide: " + peptide.getSequence() + "\t" + peptide.getCalcMass() + "\t" + peptide.getQueriesCount() + "\t" + peptide.getSequenceHTML(null,false, false, false, null, null,map));
+                // Create a JSON array to store peptides
+                ArrayNode peptidesArray = JsonNodeFactory.instance.arrayNode();
 
-                    //wyswietlenie widm przypisanych do peptydu
-                    for (MsMsQuery query: peptide.getQueriesList())
-                    {
-                        //informacje o widmie: numer, m/z zmierzone, stopien naladowania, masa zmierzona, roznica mas w PPM, score
-                        out.println("\t\tQuery:" + query.getNr() + "\t" + query.getMz() + "\t+" + query.getCharge() + "\t" + query.getMass() + "\t" + MassTools.getDeltaPPM(query.getMass(), peptide.getCalcMass()) + "\t" + query.getScore());
+                // Iterate through peptides for the protein
+                for (MsMsPeptideHit peptide : protein.getPeptides().values()) {
+                    ObjectNode peptideNode = JsonNodeFactory.instance.objectNode();
+                    peptideNode.put("Sequence", peptide.getSequence());
+                    peptideNode.put("CalcMass", peptide.getCalcMass());
+                    peptideNode.put("QueriesCount", peptide.getQueriesCount());
+                    peptideNode.put("SequenceHTML", peptide.getSequenceHTML(null, false, false, false, null, null, map));
+
+                    // Create a JSON array to store queries
+                    ArrayNode queriesArray = JsonNodeFactory.instance.arrayNode();
+
+                    // Iterate through queries for the peptide
+                    for (MsMsQuery query : peptide.getQueriesList()) {
+                        ObjectNode queryNode = JsonNodeFactory.instance.objectNode();
+                        queryNode.put("Nr", query.getNr());
+                        queryNode.put("Mz", query.getMz());
+                        queryNode.put("Charge", query.getCharge());
+                        queryNode.put("Mass", query.getMass());
+                        queryNode.put("DeltaPPM", MassTools.getDeltaPPM(query.getMass(), peptide.getCalcMass()));
+                        queryNode.put("Score", query.getScore());
+
+                        // Add the query to the queries array
+                        queriesArray.add(queryNode);
                     }
+
+                    // Add the queries array to the peptide
+                    peptideNode.set("QueriesList", queriesArray);
+
+                    // Add the peptide to the peptides array
+                    peptidesArray.add(peptideNode);
                 }
+
+                // Add the peptides array to the protein
+                proteinNode.set("Peptides", peptidesArray);
+
+                // Add the protein to the proteins array
+                proteinsArray.add(proteinNode);
             }
-        }
-        catch (MScanException mse) {
+
+            // Add the proteins array to the JSON result
+            jsonResult.set("Proteins", proteinsArray);
+
+            // Convert the JSON structure to a JSON string
+            String resultsJson = objectMapper.writeValueAsString(jsonResult);
+
+            return resultsJson;
+        } catch (MScanException mse) {
             System.out.println(mse);
-        } catch (FileNotFoundException e) {
+        } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
+        return "";
     }
 }
