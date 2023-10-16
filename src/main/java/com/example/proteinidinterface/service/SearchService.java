@@ -203,7 +203,7 @@ public class SearchService implements DbEngineListener {
             out.println("Data file: " + header.getMsDataFile());
 
             //T.R. 27.10.2017 Zmiana sposobu pobierania informacji o bazie danych
-            DB db=header.getDB(0);
+            DB db=header.getDB(2);
             out.println("Database name: " + db.getDbName());
             //out.println("Database type: " + DBTools.getDbName(db.getDbType()));
             out.println("Database version: " + db.getDbVersion());
