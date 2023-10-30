@@ -1,7 +1,10 @@
 package com.example.proteinidinterface.service;
 
 import com.example.proteinidinterface.model.ConfigForm;
+import com.example.proteinidinterface.model.Search;
+import com.example.proteinidinterface.repository.SearchRepository;
 import mscanlib.ms.db.DbTools;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -16,6 +19,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Objects;
 
 import apps.mscandb.*;
@@ -35,6 +39,9 @@ import org.springframework.web.servlet.ModelAndView;
 
 @Service
 public class SearchService implements DbEngineListener {
+
+    @Autowired
+    private SearchRepository searchRepository;
 
     private String[] mFilenames = null;	//nazwy plikow wejsciowych
     private DbEngineSearchConfig mConfig = null;		//obiekt konfiguracji przeszukania

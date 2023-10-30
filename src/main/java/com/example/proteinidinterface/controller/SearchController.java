@@ -1,6 +1,7 @@
 package com.example.proteinidinterface.controller;
 
 import com.example.proteinidinterface.model.ConfigForm;
+import com.example.proteinidinterface.model.Search;
 import com.example.proteinidinterface.service.SearchService;
 import mscanlib.ms.db.DbTools;
 import mscanlib.ms.mass.EnzymeMap;
@@ -8,13 +9,11 @@ import mscanlib.ms.mass.MassTools;
 import mscanlib.ms.mass.PTMMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 public class SearchController {
@@ -27,7 +26,7 @@ public class SearchController {
 
     @PostMapping("/")
     protected ResponseEntity<Object> performSearch(@ModelAttribute("configFormObject") ConfigForm configFormObject) throws IOException {
-        return ResponseEntity.ok() .body(searchService.performSearch(configFormObject).toString());
+        return ResponseEntity.ok().body(searchService.performSearch(configFormObject).toString());
     }
 
     @GetMapping("/")
