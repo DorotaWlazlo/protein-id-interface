@@ -1,14 +1,14 @@
 package com.example.proteinidinterface.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
+import java.util.Set;
+
 
 @Entity
+@Table(name = "USERS")
 @NoArgsConstructor
 @AllArgsConstructor
 public class User {

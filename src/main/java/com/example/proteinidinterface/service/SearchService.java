@@ -81,6 +81,7 @@ public class SearchService implements DbEngineListener {
             MScanDb dbEngine = new MScanDb(Arrays.asList(this.mFilenames),this.mConfig,null);
             dbEngine.addDbEngineListener(this);
             dbEngine.start();
+            System.out.print("Sprawdzenie czy funkcja bedzie mogła normalnie zwrocic");
         }
         else
         {
@@ -121,6 +122,11 @@ public class SearchService implements DbEngineListener {
     public void notifyFinished(DbEngine engine)
     {
         System.out.println("SEARCH FINISHED");
+        try {
+            this.out = new PrintWriter("result.txt");
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
 
         /*
          * Odczyt plikow z wynikami: zostana zapisane w tym samym katalogu co pliki wejsciowe i beda mialy takie saea nazwy i rozszerzenia .out
@@ -198,7 +204,7 @@ public class SearchService implements DbEngineListener {
             MScanDbOutFileReader reader=new MScanDbOutFileReader(filename,new MsMsScanConfig());
             reader.readFile();
             reader.closeFile();
-            this.out = new PrintWriter("result.txt");
+
 
             /*
              * Pobranie i wyswietlenie naglowka
@@ -210,7 +216,7 @@ public class SearchService implements DbEngineListener {
             out.println("Data file: " + header.getMsDataFile());
 
             //T.R. 27.10.2017 Zmiana sposobu pobierania informacji o bazie danych
-            DB db=header.getDB(2);
+            DB db=header.getDB(0);
             out.println("Database name: " + db.getDbName());
             //out.println("Database type: " + DBTools.getDbName(db.getDbType()));
             out.println("Database version: " + db.getDbVersion());
@@ -269,8 +275,6 @@ public class SearchService implements DbEngineListener {
         }
         catch (MScanException mse) {
             System.out.println(mse);
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
         }
     }
 }
