@@ -1,7 +1,9 @@
 package com.example.proteinidinterface.service;
 
 import com.example.proteinidinterface.model.ConfigForm;
+import com.example.proteinidinterface.model.FASTAFile;
 import com.example.proteinidinterface.model.Search;
+import com.example.proteinidinterface.repository.FASTARepository;
 import com.example.proteinidinterface.repository.SearchRepository;
 import mscanlib.ms.db.DbTools;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +45,9 @@ public class SearchService implements DbEngineListener {
     @Autowired
     private SearchRepository searchRepository;
 
+    @Autowired
+    private FASTARepository fastaRepository;
+
     private String[] mFilenames = null;	//nazwy plikow wejsciowych
     private DbEngineSearchConfig mConfig = null;		//obiekt konfiguracji przeszukania
     private PrintWriter out = null;
@@ -81,13 +86,12 @@ public class SearchService implements DbEngineListener {
             MScanDb dbEngine = new MScanDb(Arrays.asList(this.mFilenames),this.mConfig,null);
             dbEngine.addDbEngineListener(this);
             dbEngine.start();
-            System.out.print("Sprawdzenie czy funkcja bedzie mogła normalnie zwrocic");
         }
         else
         {
             System.out.println("Missing input file");
         }
-        return null;
+        return this.out;
     }
 
     /**
@@ -155,14 +159,15 @@ public class SearchService implements DbEngineListener {
         config.setUser(configFormObject.getName());																		//uzytkownik
         config.setUserMail(configFormObject.getEmail());															//mail
 
-        config.setSmp(false);																		//wylaczenie wielowatkowosci
+        config.setSmp(false); //wylaczenie wielowatkowosci
 
+        FASTAFile fasta = fastaRepository.findByDatabaseNameAndTaxonomy("SwissProt", "Homo Sapiens");
         //T.R. 27.10.2017 Konwersja nazwy typu bazy danych na identyfikator
-        DB db = new DB(2);												//identyfikator numeryczny (pobrany z bazy danych)
+        DB db = new DB(fasta.getDatabaseId());												//identyfikator numeryczny (pobrany z bazy danych)
 
-        db.setDbFilename("C:\\Users\\Dorota\\Documents\\Cukierki\\Studia\\INŻYNIERKA\\Dane\\swissprot_Homo_Sapiens.fasta");				//plik FASTA (pobrany z bazy danych)
+        db.setDbFilename(fasta.getFastaRecord());				//plik FASTA (pobrany z bazy danych)
         db.setDbName(DbTools.getDbName(2));																	//nazwa (pobrana z formularza)
-        db.setDbVersion("WERSJA_BAZY");																//wersja (pobrana z bazy danych)
+        db.setDbVersion(fasta.getVersion());																//wersja (pobrana z bazy danych)
         db.setIdRegExp("ID_REGEXP");																//wyrazenie regularne (pobrane z bazy danych)
         db.setIdRegExp("NAME_REGEXP");																//wyrazenie regularne (pobrane z bazy danych)
         config.addDB(db);

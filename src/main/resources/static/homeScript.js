@@ -130,6 +130,14 @@ fetch('/databaseNames')
             option.text = names[i];
             baseSelect.appendChild(option);
         }
+        const option1 = document.createElement('option');
+        option1.value = "SwissProt";
+        option1.text = "SwissProt";
+        baseSelect.appendChild(option1);
+        const option2 = document.createElement('option');
+        option2.value = "TrEMBL";
+        option2.text = "TrEMBL";
+        baseSelect.appendChild(option2);
     });
 
 // Populating Mc select

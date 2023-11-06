@@ -26,7 +26,7 @@ public class SearchController {
 
     @PostMapping("/")
     protected ResponseEntity<Object> performSearch(@ModelAttribute("configFormObject") ConfigForm configFormObject) throws IOException {
-        return ResponseEntity.ok().body(searchService.performSearch(configFormObject).toString());
+        return ResponseEntity.ok().body(searchService.performSearch(configFormObject));
     }
 
     @GetMapping("/")
