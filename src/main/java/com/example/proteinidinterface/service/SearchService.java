@@ -1,8 +1,7 @@
 package com.example.proteinidinterface.service;
 
-import com.example.proteinidinterface.model.ConfigForm;
-import com.example.proteinidinterface.model.FASTAFile;
-import com.example.proteinidinterface.model.Search;
+import com.example.proteinidinterface.model.*;
+import com.example.proteinidinterface.model.Protein;
 import com.example.proteinidinterface.repository.FASTARepository;
 import com.example.proteinidinterface.repository.SearchRepository;
 import mscanlib.ms.db.DbTools;
@@ -50,7 +49,7 @@ public class SearchService implements DbEngineListener {
 
     private String[] mFilenames = null;	//nazwy plikow wejsciowych
     private DbEngineSearchConfig mConfig = null;		//obiekt konfiguracji przeszukania
-    private PrintWriter out = null;
+    private SearchResult searchResult = new SearchResult();
 
 
     public Object performSearch(ConfigForm configFormObject) throws IOException {
@@ -91,7 +90,7 @@ public class SearchService implements DbEngineListener {
         {
             System.out.println("Missing input file");
         }
-        return this.out;
+        return this.searchResult;
     }
 
     /**
@@ -126,17 +125,11 @@ public class SearchService implements DbEngineListener {
     public void notifyFinished(DbEngine engine)
     {
         System.out.println("SEARCH FINISHED");
-        try {
-            this.out = new PrintWriter("result.txt");
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-
         /*
          * Odczyt plikow z wynikami: zostana zapisane w tym samym katalogu co pliki wejsciowe i beda mialy takie saea nazwy i rozszerzenia .out
          */
         for (int i=0;i<this.mFilenames.length;i++)
-            this.readResultFile(MScanSystemTools.replaceExtension(this.mFilenames[i],"out"),this.out);
+            this.readResultFile(MScanSystemTools.replaceExtension(this.mFilenames[i],"out"),this.searchResult);
     }
 
     //
@@ -198,7 +191,7 @@ public class SearchService implements DbEngineListener {
      *
      * @param filename
      */
-    public void readResultFile(String filename,PrintWriter out)
+    public void readResultFile(String filename,SearchResult searchResult)
     {
         try
         {
@@ -209,32 +202,29 @@ public class SearchService implements DbEngineListener {
             MScanDbOutFileReader reader=new MScanDbOutFileReader(filename,new MsMsScanConfig());
             reader.readFile();
             reader.closeFile();
-
-
             /*
              * Pobranie i wyswietlenie naglowka
              */
             MsMsFileHeader header=reader.getHeader();
-            out.println("\nTitle: " + header.getSearchTitle());
-            out.println("User: " + header.getUser());
-            out.println("User mail: " + header.getUserMail());
-            out.println("Data file: " + header.getMsDataFile());
+            searchResult.setTitle(header.getSearchTitle());
+            searchResult.setName(header.getUser());
+            searchResult.setEmail(header.getUserMail());
 
             //T.R. 27.10.2017 Zmiana sposobu pobierania informacji o bazie danych
             DB db=header.getDB(0);
-            out.println("Database name: " + db.getDbName());
+            searchResult.setDatabaseName(db.getDbName());
             //out.println("Database type: " + DBTools.getDbName(db.getDbType()));
-            out.println("Database version: " + db.getDbVersion());
-            out.println("Database FASTA file: " + db.getDbFilename());
-            out.println("Database Taxonomy: " + db.getTaxonomy());
+            searchResult.setDatabaseVersion(db.getDbVersion());
+            searchResult.setDatabaseFastaFile(db.getDbFilename());
+            searchResult.setTaxonomy(db.getTaxonomy());
 
-            out.println("Enzyme: " + header.getEnzyme());
-            out.println("Missed cleavages: " + header.getMissedCleavages());
-            out.println("Instrument: " + header.getInstrumentName());
-            out.println("Parent MMD: " + header.getParentMMDString());
-            out.println("Fragment MMD: " + header.getFragmentMMDString());
-            out.println("Fixed PTMs: " + header.getFixedPTMsString());
-            out.println("Variable PTMs: " + header.getVariablePTMsString());
+            searchResult.setEnzyme(String.valueOf(header.getEnzyme()));
+            searchResult.setMissedCleavages(header.getMissedCleavages());
+//            out.println("Instrument: " + header.getInstrumentName());
+            searchResult.setPepTol(header.getParentMMDString());
+            searchResult.setFragTol(header.getFragmentMMDString());
+            searchResult.setPtmFix(header.getFixedPTMsString());
+            searchResult.setPtmVar(header.getVariablePTMsString());
 
             /*
              * Pobranie map bialek i peptydow
@@ -252,30 +242,37 @@ public class SearchService implements DbEngineListener {
             for (MsMsProteinHit protein : proteinsMap.values())
             {
                 //informacje o bialku: ID, nazwa, score, liczba peptydow
-                out.println("Protein: " + protein.getId() + "\t" + protein.getName() + "\t" + protein.getScore() + "\t" + protein.getPeptidesCount());
+                Protein proteinResult = new Protein();
+                proteinResult.setId(protein.getId());
+                proteinResult.setName(protein.getName());
+                proteinResult.setScore(protein.getScore());
+                proteinResult.setPeptideCount(protein.getPeptidesCount());
 
                 //Wyswietlenie peptydow bialka
                 for (MsMsPeptideHit peptide : protein.getPeptides().values())
                 {
-                    //T.R. 27.10.2017 Demonstracja sposobu pobrania sekwencji w postaci HTML. Parametry:
-                    //terms - null
-                    //withHeader - jezeli true, to ciag ma tez znaczniki <html> </html>
-                    //bold - pogrubienie
-                    //italic - kursywa
-                    //fontFace - nazwa czcionki
-                    //fontColor - kolor
-                    //symbolsMap - mapa modyfikacji pobrana z naglowka
-
                     //informacje o peptydzie: sekwencja i masa teoretyczna (wynikajaca z sekwencji)
-                    out.println("\tPeptide: " + peptide.getSequence() + "\t" + peptide.getCalcMass() + "\t" + peptide.getQueriesCount() + "\t" + peptide.getSequenceHTML(null,false, false, false, null, null,map));
+                    Peptide peptideResult = new Peptide();
+                    peptideResult.setSequence(peptide.getSequence());
+                    peptideResult.setMass(peptide.getCalcMass());
+                    peptideResult.setQueriesCount(peptide.getQueriesCount());
 
                     //wyswietlenie widm przypisanych do peptydu
                     for (MsMsQuery query: peptide.getQueriesList())
                     {
                         //informacje o widmie: numer, m/z zmierzone, stopien naladowania, masa zmierzona, roznica mas w PPM, score
-                        out.println("\t\tQuery:" + query.getNr() + "\t" + query.getMz() + "\t+" + query.getCharge() + "\t" + query.getMass() + "\t" + MassTools.getDeltaPPM(query.getMass(), peptide.getCalcMass()) + "\t" + query.getScore());
+                        Query queryResult = new Query();
+                        queryResult.setNumber(query.getNr());
+                        queryResult.setMz(query.getMz());
+                        queryResult.setCharge(query.getCharge());
+                        queryResult.setMass(query.getMass());
+                        queryResult.setDeltaPPM(MassTools.getDeltaPPM(query.getMass(), peptide.getCalcMass()));
+                        queryResult.setScore(query.getScore());
+                        peptideResult.addQuery(queryResult);
                     }
+                    proteinResult.addPeptide(peptideResult);
                 }
+                searchResult.addProtein(proteinResult);
             }
         }
         catch (MScanException mse) {
