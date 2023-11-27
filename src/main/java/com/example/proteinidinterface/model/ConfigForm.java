@@ -15,8 +15,16 @@ public class ConfigForm {
     private String pepTolUnit;
     private double fragTol;
     private String fragTolUnit;
-    private String taxonomy = "Homo Sapiens";
+    private String taxonomy;
     private MultipartFile file;
+
+    public String getTaxonomy() {
+        return taxonomy;
+    }
+
+    public void setTaxonomy(String taxonomy) {
+        this.taxonomy = taxonomy;
+    }
 
     public String getEnzyme() {
         return enzyme;

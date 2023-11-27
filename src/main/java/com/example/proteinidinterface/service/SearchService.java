@@ -11,9 +11,7 @@ import org.springframework.util.StringUtils;
 
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -35,7 +33,6 @@ import mscanlib.ms.mass.EnzymeMap;
 import mscanlib.ms.msms.io.*;
 import mscanlib.system.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.ModelAndView;
 
 
 @Service
@@ -144,7 +141,6 @@ public class SearchService implements DbEngineListener {
     {
         DbEngineSearchConfig	config = new DbEngineSearchConfig();
 
-
         //T.R. 27.10.2017 MScanDB bedzie dzialal w trybie embedded (czyli nie uzyje System.exit przy bledzie)
         config.setEmbedded(true);
 
@@ -183,7 +179,6 @@ public class SearchService implements DbEngineListener {
 
         names = configFormObject.getPtmVar();													//modyfikacje zmienne
         config.getDigestConfig().setVariablePTMs(PTMTools.getPTMs(names));
-
         return config;
     }
 
@@ -211,7 +206,7 @@ public class SearchService implements DbEngineListener {
             searchResult.setEmail(header.getUserMail());
 
             //T.R. 27.10.2017 Zmiana sposobu pobierania informacji o bazie danych
-            DB db=header.getDB(0);
+            DB db=header.getDB();
             searchResult.setDatabaseName(db.getDbName());
             //out.println("Database type: " + DBTools.getDbName(db.getDbType()));
             searchResult.setDatabaseVersion(db.getDbVersion());
@@ -278,5 +273,13 @@ public class SearchService implements DbEngineListener {
         catch (MScanException mse) {
             System.out.println(mse);
         }
+    }
+
+    public List<String> getDatabase() {
+        return this.fastaRepository.findDistinctDatabase();
+    }
+
+    public List<String> getTaxonomy() {
+        return this.fastaRepository.findDistinctTaxonomy();
     }
 }
