@@ -15,10 +15,4 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-
-    @PostMapping("/users")
-    public User createUser(@ModelAttribute("user") User user) {
-        return userService.createUser(user);
-    }
-
 }
