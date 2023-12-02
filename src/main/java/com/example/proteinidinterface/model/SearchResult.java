@@ -1,9 +1,17 @@
 package com.example.proteinidinterface.model;
 
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Lob;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 
 public class SearchResult implements Serializable {
+    private String uploadedFile;
+
+    private String resultFile;
     private String username;
     private String email;
     private String title;
@@ -17,7 +25,23 @@ public class SearchResult implements Serializable {
     private String ptmVar;
     private String pepTol;
     private String fragTol;
-    private ArrayList<Protein> proteins = new ArrayList<Protein>();
+    private ArrayList<Protein> proteins = new ArrayList<>();
+
+    public String getUploadedFile() {
+        return uploadedFile;
+    }
+
+    public void setUploadedFile(String uploadedFile) {
+        this.uploadedFile = uploadedFile;
+    }
+
+    public String getResultFile() {
+        return resultFile;
+    }
+
+    public void setResultFile(String resultFile) {
+        this.resultFile = resultFile;
+    }
 
     public String getName() {
         return username;

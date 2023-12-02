@@ -16,10 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 import apps.mscandb.*;
 import mscanlib.common.*;
@@ -150,18 +147,18 @@ public class SearchService implements DbEngineListener {
 
         config.setSmp(false); //wylaczenie wielowatkowosci
 
-        FASTAFile fasta = fastaRepository.findByDatabaseNameAndTaxonomy("SwissProt", "Homo Sapiens");
+        FASTAFile fasta = fastaRepository.findByDatabaseNameAndTaxonomy(configFormObject.getDatabaseName(), configFormObject.getTaxonomy());
         //T.R. 27.10.2017 Konwersja nazwy typu bazy danych na identyfikator
         DB db = new DB(fasta.getDatabaseId());												//identyfikator numeryczny (pobrany z bazy danych)
 
         db.setDbFilename(fasta.getFastaRecord());				//plik FASTA (pobrany z bazy danych)
-        db.setDbName(DbTools.getDbName(2));																	//nazwa (pobrana z formularza)
+        db.setDbName(configFormObject.getDatabaseName());																	//nazwa (pobrana z formularza)
         db.setDbVersion(fasta.getVersion());																//wersja (pobrana z bazy danych)
         db.setIdRegExp("ID_REGEXP");																//wyrazenie regularne (pobrane z bazy danych)
         db.setIdRegExp("NAME_REGEXP");																//wyrazenie regularne (pobrane z bazy danych)
         config.addDB(db);
 
-        config.setTaxonomy("Homo sapiens");															//taksonomia
+        config.setTaxonomy(fasta.getTaxonomy());															//taksonomia
 
         config.getDigestConfig().setEnzyme(EnzymeMap.getEnzyme(configFormObject.getEnzyme()));	//enzym
         config.getDigestConfig().setMissedCleavages(configFormObject.getMissedCleavages());	//liczba niedotrawek
@@ -269,9 +266,13 @@ public class SearchService implements DbEngineListener {
                 }
                 searchResult.addProtein(proteinResult);
             }
+            searchResult.setResultFile(Base64.getEncoder().encodeToString(Files.readAllBytes(Paths.get(filename))));
+            searchResult.setUploadedFile(Base64.getEncoder().encodeToString(Files.readAllBytes(Paths.get(MScanSystemTools.replaceExtension(filename,"mgf")))));
         }
         catch (MScanException mse) {
             System.out.println(mse);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
