@@ -13,12 +13,8 @@ public class Search {
     private Long id;
     @Lob
     private byte[] uploadedFile;
-
     @Lob
     private byte[] resultFile;
-
-    private SearchResult searchResult;
-
     @ManyToOne
     @JoinColumn(name="user_id", nullable=false)
     private User user;
@@ -40,14 +36,6 @@ public class Search {
 
     public void setResultFile(byte[] resultFile) {
         this.resultFile = resultFile;
-    }
-
-    public SearchResult getSearchResult() {
-        return searchResult;
-    }
-
-    public void setSearchResult(SearchResult searchResult) {
-        this.searchResult = searchResult;
     }
 
     public User getUser() {
