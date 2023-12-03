@@ -23,7 +23,9 @@ public class UserService {
     private UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-
+    public User findByUsername(String username) {
+        return userRepository.findByUsername(username).orElseThrow(() -> new AppException("Unknown user", HttpStatus.NOT_FOUND));
+    }
 
     public UserDto login(CredentialsDto credentialsDto) {
         User user = userRepository.findByEmail(credentialsDto.login())
