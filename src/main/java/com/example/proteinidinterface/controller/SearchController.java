@@ -7,6 +7,8 @@ import mscanlib.ms.mass.MassTools;
 import mscanlib.ms.mass.PTMMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
@@ -25,6 +27,11 @@ public class SearchController {
         this.searchService = searchService;
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<Object> getSearchById(@PathVariable Long id) {
+        return ResponseEntity.ok().body(searchService.findSearch(id));
+    }
+
     @PostMapping("/")
     public ResponseEntity<Object> performSearch(@RequestParam("name") String name, @RequestParam("email") String email, @RequestParam("title")  String title, @RequestParam("databaseName") String databaseName,
                                                 @RequestParam("enzyme") String enzyme,@RequestParam("missedCleavages") int missedCleavages, @RequestParam("ptmFix") String[] ptmFix, @RequestParam("ptmVar") String[] ptmVar,
@@ -38,7 +45,6 @@ public class SearchController {
         configFormObject.setDatabaseName(databaseName);
         configFormObject.setMissedCleavages(missedCleavages);
         configFormObject.setPtmFix(ptmFix);
-        System.out.print(Arrays.toString(ptmVar));
         configFormObject.setPtmVar(ptmVar);
         configFormObject.setPepTol(pepTol);
         configFormObject.setPepTolUnit(pepTolUnit);

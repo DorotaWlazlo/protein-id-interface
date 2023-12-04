@@ -4,6 +4,7 @@ import com.example.proteinidinterface.model.*;
 import com.example.proteinidinterface.model.Protein;
 import com.example.proteinidinterface.repository.FASTARepository;
 import com.example.proteinidinterface.repository.SearchRepository;
+import com.example.proteinidinterface.repository.UserRepository;
 import mscanlib.ms.db.DbTools;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -40,6 +41,9 @@ public class SearchService implements DbEngineListener {
 
     @Autowired
     private FASTARepository fastaRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     private String[] mFilenames = null;	//nazwy plikow wejsciowych
     private DbEngineSearchConfig mConfig = null;		//obiekt konfiguracji przeszukania
@@ -122,6 +126,25 @@ public class SearchService implements DbEngineListener {
         /*
          * Odczyt plikow z wynikami: zostana zapisane w tym samym katalogu co pliki wejsciowe i beda mialy takie saea nazwy i rozszerzenia .out
          */
+
+        if(userRepository.findDistinctEmail().contains(this.mConfig.getUserMail())) {
+            User user = userRepository.findByEmail(this.mConfig.getUserMail()).orElse(null);
+            Search search = new Search(user);
+            try {
+                search.setUploadedFile(Files.readAllBytes(Paths.get(this.mFilenames[0])));
+                search.setResultFile(Files.readAllBytes(Paths.get(MScanSystemTools.replaceExtension(this.mFilenames[0],"out"))));
+                search.setTitle(this.mConfig.getSearchTitle());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            assert user != null;
+            user.addSearch(search);
+            System.out.println(user.getSearches().size());
+            searchRepository.save(search);
+            System.out.println(searchRepository.findByUser(user).size());
+        }
+
+
         for (int i=0;i<this.mFilenames.length;i++)
             this.readResultFile(MScanSystemTools.replaceExtension(this.mFilenames[i],"out"),this.searchResult);
     }
@@ -274,6 +297,11 @@ public class SearchService implements DbEngineListener {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public SearchResult findSearch(Long id) {
+        Search search = searchRepository.getReferenceById(id);
+        return null;
     }
 
     public List<String> getDatabase() {

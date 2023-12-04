@@ -29,6 +29,17 @@ public class User {
         this.password = password;
     }
 
+    public void addSearch(Search search) {
+        this.searches.add(search);
+    }
+    public List<Search> getSearches() {
+        return searches;
+    }
+
+    public void setSearches(List<Search> searches) {
+        this.searches = searches;
+    }
+
     public Long getId() {
         return id;
     }
