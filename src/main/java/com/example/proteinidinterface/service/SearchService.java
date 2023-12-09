@@ -298,7 +298,9 @@ public class SearchService implements DbEngineListener {
                 searchResult.addProtein(proteinResult);
             }
             searchResult.setResultFile(Base64.getEncoder().encodeToString(Files.readAllBytes(Paths.get(filename))));
+            Files.deleteIfExists(Paths.get(filename));
             searchResult.setUploadedFile(Base64.getEncoder().encodeToString(Files.readAllBytes(Paths.get(MScanSystemTools.replaceExtension(filename,"mgf")))));
+            Files.deleteIfExists(Paths.get(MScanSystemTools.replaceExtension(filename,"mgf")));
         }
         catch (MScanException mse) {
             System.out.println(mse);
