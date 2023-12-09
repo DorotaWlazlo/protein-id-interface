@@ -19,6 +19,8 @@ public class Search {
     @ManyToOne
     @JoinColumn(name="user_id", nullable=false)
     private User user;
+    @Lob
+    private SearchResult searchResult;
 
     public Search(User user) {
         this.user = user;
@@ -26,6 +28,14 @@ public class Search {
 
     public String getTitle() {
         return title;
+    }
+
+    public SearchResult getSearchResult() {
+        return searchResult;
+    }
+
+    public void setSearchResult(SearchResult searchResult) {
+        this.searchResult = searchResult;
     }
 
     public void setTitle(String title) {

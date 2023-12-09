@@ -9,8 +9,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 public class SearchResult implements Serializable {
+    @Lob
     private String uploadedFile;
-
+    @Lob
     private String resultFile;
     private String username;
     private String email;
@@ -24,7 +25,9 @@ public class SearchResult implements Serializable {
     private String ptmFix;
     private String ptmVar;
     private String pepTol;
+    private String pepUnit;
     private String fragTol;
+    private String fragUnit;
     private ArrayList<Protein> proteins = new ArrayList<>();
 
     public String getUploadedFile() {
@@ -157,5 +160,21 @@ public class SearchResult implements Serializable {
 
     public void addProtein(Protein protein) {
         this.proteins.add(protein);
+    }
+
+    public String getPepUnit() {
+        return pepUnit;
+    }
+
+    public void setPepUnit(String pepUnit) {
+        this.pepUnit = pepUnit;
+    }
+
+    public String getFragUnit() {
+        return fragUnit;
+    }
+
+    public void setFragUnit(String fragUnit) {
+        this.fragUnit = fragUnit;
     }
 }

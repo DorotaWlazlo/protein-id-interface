@@ -18,6 +18,8 @@ public class ConfigForm {
     private String taxonomy;
     private MultipartFile file;
 
+    private String dbVersion;
+
     public String getTaxonomy() {
         return taxonomy;
     }
@@ -127,5 +129,13 @@ public class ConfigForm {
 
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
+    }
+
+    public String getDbVersion() {
+        return dbVersion;
+    }
+
+    public void setDbVersion(String dbVersion) {
+        this.dbVersion = dbVersion;
     }
 }

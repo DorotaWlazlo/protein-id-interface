@@ -48,6 +48,7 @@ public class SearchService implements DbEngineListener {
     private String[] mFilenames = null;	//nazwy plikow wejsciowych
     private DbEngineSearchConfig mConfig = null;		//obiekt konfiguracji przeszukania
     private SearchResult searchResult = new SearchResult();
+    private ConfigForm configForm = null;
 
 
     public Object performSearch(ConfigForm configFormObject) throws IOException {
@@ -127,26 +128,28 @@ public class SearchService implements DbEngineListener {
          * Odczyt plikow z wynikami: zostana zapisane w tym samym katalogu co pliki wejsciowe i beda mialy takie saea nazwy i rozszerzenia .out
          */
 
-        if(userRepository.findDistinctEmail().contains(this.mConfig.getUserMail())) {
-            User user = userRepository.findByEmail(this.mConfig.getUserMail()).orElse(null);
-            Search search = new Search(user);
-            try {
-                search.setUploadedFile(Files.readAllBytes(Paths.get(this.mFilenames[0])));
-                search.setResultFile(Files.readAllBytes(Paths.get(MScanSystemTools.replaceExtension(this.mFilenames[0],"out"))));
-                search.setTitle(this.mConfig.getSearchTitle());
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+        for (int i=0;i<this.mFilenames.length;i++) {
+            this.readResultFile(MScanSystemTools.replaceExtension(this.mFilenames[i], "out"), this.searchResult);
+            System.out.println("test herer");
+            if(userRepository.findDistinctEmail().contains(this.mConfig.getUserMail())) {
+                System.out.println("test again");
+                User user = userRepository.findByEmail(this.mConfig.getUserMail()).orElse(null);
+                Search search = new Search(user);
+                try {
+                    search.setUploadedFile(Files.readAllBytes(Paths.get(this.mFilenames[0])));
+                    search.setResultFile(Files.readAllBytes(Paths.get(MScanSystemTools.replaceExtension(this.mFilenames[0],"out"))));
+                    search.setTitle(this.mConfig.getSearchTitle());
+                    search.setSearchResult(this.searchResult);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                assert user != null;
+                user.addSearch(search);
+                System.out.println(user.getSearches().size());
+                searchRepository.save(search);
+                System.out.println(searchRepository.findByUser(user).size());
             }
-            assert user != null;
-            user.addSearch(search);
-            System.out.println(user.getSearches().size());
-            searchRepository.save(search);
-            System.out.println(searchRepository.findByUser(user).size());
         }
-
-
-        for (int i=0;i<this.mFilenames.length;i++)
-            this.readResultFile(MScanSystemTools.replaceExtension(this.mFilenames[i],"out"),this.searchResult);
     }
 
     //
@@ -180,6 +183,9 @@ public class SearchService implements DbEngineListener {
         db.setIdRegExp("ID_REGEXP");																//wyrazenie regularne (pobrane z bazy danych)
         db.setIdRegExp("NAME_REGEXP");																//wyrazenie regularne (pobrane z bazy danych)
         config.addDB(db);
+
+        configFormObject.setDbVersion(fasta.getVersion());
+        this.configForm = configFormObject;
 
         config.setTaxonomy(fasta.getTaxonomy());															//taksonomia
 
@@ -229,9 +235,9 @@ public class SearchService implements DbEngineListener {
             DB db=header.getDB();
             searchResult.setDatabaseName(db.getDbName());
             //out.println("Database type: " + DBTools.getDbName(db.getDbType()));
-            searchResult.setDatabaseVersion(db.getDbVersion());
+            searchResult.setDatabaseVersion(this.configForm.getDbVersion());
             searchResult.setDatabaseFastaFile(db.getDbFilename());
-            searchResult.setTaxonomy(db.getTaxonomy());
+            searchResult.setTaxonomy(this.configForm.getTaxonomy());
 
             searchResult.setEnzyme(String.valueOf(header.getEnzyme()));
             searchResult.setMissedCleavages(header.getMissedCleavages());
@@ -240,6 +246,8 @@ public class SearchService implements DbEngineListener {
             searchResult.setFragTol(header.getFragmentMMDString());
             searchResult.setPtmFix(header.getFixedPTMsString());
             searchResult.setPtmVar(header.getVariablePTMsString());
+            searchResult.setPepUnit(this.configForm.getPepTolUnit());
+            searchResult.setFragUnit(this.configForm.getFragTolUnit());
 
             /*
              * Pobranie map bialek i peptydow
