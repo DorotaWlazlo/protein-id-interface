@@ -43,6 +43,7 @@ public class AuthController {
         List<Search> searches = user.getSearches();
         for (Search search : searches) {
             search.setUser(null);
+            search.setSearchResult(null);
         }
         return searches;
     }

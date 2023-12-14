@@ -7,14 +7,10 @@ import mscanlib.ms.mass.MassTools;
 import mscanlib.ms.mass.PTMMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.ModelAndView;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 
 @RestController
@@ -55,11 +51,6 @@ public class SearchController {
 
         return ResponseEntity.ok().body(searchService.performSearch(configFormObject));
     }
-
-//    @GetMapping("/")
-//    public ModelAndView index() {
-//        return new ModelAndView("index.html");
-//    }
 
     @GetMapping("/enzymeNames")
     public String[] getEnzymeNames() {

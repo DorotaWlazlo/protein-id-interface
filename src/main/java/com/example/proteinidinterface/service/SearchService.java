@@ -135,19 +135,19 @@ public class SearchService implements DbEngineListener {
                 System.out.println("test again");
                 User user = userRepository.findByEmail(this.mConfig.getUserMail()).orElse(null);
                 Search search = new Search(user);
-                try {
-                    search.setUploadedFile(Files.readAllBytes(Paths.get(this.mFilenames[0])));
-                    search.setResultFile(Files.readAllBytes(Paths.get(MScanSystemTools.replaceExtension(this.mFilenames[0],"out"))));
                     search.setTitle(this.mConfig.getSearchTitle());
                     search.setSearchResult(this.searchResult);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
                 assert user != null;
                 user.addSearch(search);
                 System.out.println(user.getSearches().size());
                 searchRepository.save(search);
                 System.out.println(searchRepository.findByUser(user).size());
+            }
+            try {
+                Files.deleteIfExists(Paths.get(this.mFilenames[i]));
+                Files.deleteIfExists(Paths.get(MScanSystemTools.replaceExtension(this.mFilenames[i],"mgf")));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
         }
     }
@@ -298,9 +298,7 @@ public class SearchService implements DbEngineListener {
                 searchResult.addProtein(proteinResult);
             }
             searchResult.setResultFile(Base64.getEncoder().encodeToString(Files.readAllBytes(Paths.get(filename))));
-            Files.deleteIfExists(Paths.get(filename));
             searchResult.setUploadedFile(Base64.getEncoder().encodeToString(Files.readAllBytes(Paths.get(MScanSystemTools.replaceExtension(filename,"mgf")))));
-            Files.deleteIfExists(Paths.get(MScanSystemTools.replaceExtension(filename,"mgf")));
         }
         catch (MScanException mse) {
             System.out.println(mse);
@@ -310,8 +308,7 @@ public class SearchService implements DbEngineListener {
     }
 
     public SearchResult findSearch(Long id) {
-        Search search = searchRepository.getReferenceById(id);
-        return null;
+        return searchRepository.getReferenceById(id).getSearchResult();
     }
 
     public List<String> getDatabase() {
