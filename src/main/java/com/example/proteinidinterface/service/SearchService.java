@@ -128,15 +128,15 @@ public class SearchService implements DbEngineListener {
          * Odczyt plikow z wynikami: zostana zapisane w tym samym katalogu co pliki wejsciowe i beda mialy takie saea nazwy i rozszerzenia .out
          */
 
-        for (int i=0;i<this.mFilenames.length;i++) {
-            this.readResultFile(MScanSystemTools.replaceExtension(this.mFilenames[i], "out"), this.searchResult);
+        for (String mFilename : this.mFilenames) {
+            this.readResultFile(MScanSystemTools.replaceExtension(mFilename, "out"), this.searchResult);
             System.out.println("test herer");
-            if(userRepository.findDistinctEmail().contains(this.mConfig.getUserMail())) {
+            if (userRepository.findDistinctEmail().contains(this.mConfig.getUserMail())) {
                 System.out.println("test again");
                 User user = userRepository.findByEmail(this.mConfig.getUserMail()).orElse(null);
                 Search search = new Search(user);
-                    search.setTitle(this.mConfig.getSearchTitle());
-                    search.setSearchResult(this.searchResult);
+                search.setTitle(this.mConfig.getSearchTitle());
+                search.setSearchResult(this.searchResult);
                 assert user != null;
                 user.addSearch(search);
                 System.out.println(user.getSearches().size());
@@ -144,8 +144,8 @@ public class SearchService implements DbEngineListener {
                 System.out.println(searchRepository.findByUser(user).size());
             }
             try {
-                Files.deleteIfExists(Paths.get(this.mFilenames[i]));
-                Files.deleteIfExists(Paths.get(MScanSystemTools.replaceExtension(this.mFilenames[i],"mgf")));
+                Files.deleteIfExists(Paths.get(mFilename));
+                Files.deleteIfExists(Paths.get(MScanSystemTools.replaceExtension(mFilename, "mgf")));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

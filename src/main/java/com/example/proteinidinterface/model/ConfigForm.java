@@ -17,7 +17,6 @@ public class ConfigForm {
     private String fragTolUnit;
     private String taxonomy;
     private MultipartFile file;
-
     private String dbVersion;
 
     public String getTaxonomy() {

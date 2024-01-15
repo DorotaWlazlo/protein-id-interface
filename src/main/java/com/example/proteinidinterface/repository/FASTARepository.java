@@ -8,10 +8,8 @@ import java.util.List;
 
 public interface FASTARepository extends JpaRepository<FASTAFile, Long> {
     FASTAFile findByDatabaseNameAndTaxonomy(String databaseName, String taxonomy);
-
     @Query("SELECT DISTINCT a.taxonomy FROM FASTAFile a")
     List<String> findDistinctTaxonomy();
-
     @Query("SELECT DISTINCT a.databaseName FROM FASTAFile a")
     List<String> findDistinctDatabase();
 }

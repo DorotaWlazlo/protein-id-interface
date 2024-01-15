@@ -41,6 +41,7 @@ public class AuthController {
     public List<Search> listSearches(@RequestParam("username") String username) {
         User user = userService.findByUsername(username);
         List<Search> searches = user.getSearches();
+        System.out.println("test");
         for (Search search : searches) {
             search.setUser(null);
             search.setSearchResult(null);

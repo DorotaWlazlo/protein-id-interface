@@ -13,11 +13,11 @@ public class FASTAFile {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    String databaseName;
-    int databaseId;
-    String version;
-    String taxonomy;
-    String fastaRecord;
+    private String databaseName;
+    private int databaseId;
+    private String version;
+    private String taxonomy;
+    private String fastaRecord;
 
     public String getDatabaseName() {
         return databaseName;
