@@ -61,6 +61,8 @@ public class SearchController {
     public List<String> getDatabaseNames() {
         return searchService.getDatabase();
     }
+
+
     @GetMapping("/taxonomy")
     public List<String> getTaxonomy() {
         return searchService.getTaxonomy();

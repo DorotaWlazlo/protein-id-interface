@@ -9,7 +9,6 @@ import com.example.proteinidinterface.model.Search;
 import com.example.proteinidinterface.model.User;
 import com.example.proteinidinterface.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,7 +18,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
-public class AuthController {
+public class UserController {
     private final UserService userService;
     private final UserAuthProvider userAuthProvider;
 

@@ -13,3 +13,5 @@ public interface FASTARepository extends JpaRepository<FASTAFile, Long> {
     @Query("SELECT DISTINCT a.databaseName FROM FASTAFile a")
     List<String> findDistinctDatabase();
 }
+
+
