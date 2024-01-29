@@ -70,7 +70,7 @@ public class UserServiceTest {
     }
 
     @Test(expected = AppException.class)
-    public void whenUsernameExists_thenAppExceptionShouldBeThrown() {
+    public void whenUsernameExistsThenAppExceptionShouldBeThrown() {
         SignUpDto signUpDto = new SignUpDto("existingUser", "email@example.com", "password".toCharArray());
         User existingUser = new User("existingUser", "existingEmail@example.com","password");
 
@@ -80,7 +80,7 @@ public class UserServiceTest {
     }
 
     @Test(expected = AppException.class)
-    public void whenEmailExists_thenAppExceptionShouldBeThrown() {
+    public void whenEmailExistsThenAppExceptionShouldBeThrown() {
         SignUpDto signUpDto = new SignUpDto("newUser", "existingEmail@example.com", "password".toCharArray());
         User existingUser = new User("existingUser", "existingEmail@example.com","password");
 
@@ -90,7 +90,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void whenUsernameAndEmailAreUnique_thenNewUserShouldBeRegistered() {
+    public void whenUsernameAndEmailAreUniqueThenNewUserShouldBeRegistered() {
         SignUpDto signUpDto = new SignUpDto("newUser", "newEmail@example.com", "password".toCharArray());
         User newUser = new User("newUser","email" ,"encodedPassword");
 

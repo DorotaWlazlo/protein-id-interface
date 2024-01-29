@@ -164,7 +164,6 @@ public class SearchService implements DbEngineListener {
     {
         DbEngineSearchConfig	config = new DbEngineSearchConfig();
 
-        //T.R. 27.10.2017 MScanDB bedzie dzialal w trybie embedded (czyli nie uzyje System.exit przy bledzie)
         config.setEmbedded(true);
 
         config.setSearchTitle(configFormObject.getTitle());																//nazwa przeszukania
@@ -174,7 +173,6 @@ public class SearchService implements DbEngineListener {
         config.setSmp(false); //wylaczenie wielowatkowosci
 
         FASTAFile fasta = fastaRepository.findByDatabaseNameAndTaxonomy(configFormObject.getDatabaseName(), configFormObject.getTaxonomy());
-        //T.R. 27.10.2017 Konwersja nazwy typu bazy danych na identyfikator
         DB db = new DB(fasta.getDatabaseId());												//identyfikator numeryczny (pobrany z bazy danych)
 
         db.setDbFilename(fasta.getFastaRecord());				//plik FASTA (pobrany z bazy danych)
