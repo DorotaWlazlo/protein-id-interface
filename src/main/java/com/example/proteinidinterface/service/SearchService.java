@@ -22,7 +22,6 @@ import java.util.*;
 import apps.mscandb.*;
 import mscanlib.common.*;
 import mscanlib.ms.db.DB;
-//import mscanlib.ms.db.DBTools;
 import mscanlib.ms.mass.*;
 import mscanlib.ms.msms.*;
 import mscanlib.ms.msms.dbengines.*;
@@ -130,9 +129,7 @@ public class SearchService implements DbEngineListener {
 
         for (String mFilename : this.mFilenames) {
             this.readResultFile(MScanSystemTools.replaceExtension(mFilename, "out"), this.searchResult);
-            System.out.println("test herer");
             if (userRepository.findDistinctEmail().contains(this.mConfig.getUserMail())) {
-                System.out.println("test again");
                 User user = userRepository.findByEmail(this.mConfig.getUserMail()).orElse(null);
                 Search search = new Search(user);
                 search.setTitle(this.mConfig.getSearchTitle());
@@ -189,8 +186,6 @@ public class SearchService implements DbEngineListener {
 
         config.getDigestConfig().setEnzyme(EnzymeMap.getEnzyme(configFormObject.getEnzyme()));	//enzym
         config.getDigestConfig().setMissedCleavages(configFormObject.getMissedCleavages());	//liczba niedotrawek
-
-        //config.getScoringConfig().getFragmentationConfig().setInstrument(new MsMsInstrument(request.getParameter("instrument")));	//rodzaj spektrometru
 
         config.setParentMMD(configFormObject.getPepTol());					//tolerancja masy jonow peptydowych (macierzystych)
         config.setParentMMDUnit(MassTools.getMMDUnit(configFormObject.getPepTolUnit()));			//jednostka tolerancji masy jonow peptydowych (macierzystych)
@@ -315,5 +310,13 @@ public class SearchService implements DbEngineListener {
 
     public List<String> getTaxonomy() {
         return this.fastaRepository.findDistinctTaxonomy();
+    }
+
+    public void setmFilenames(String[] mFilenames) {
+        this.mFilenames = mFilenames;
+    }
+
+    public void setmConfig(DbEngineSearchConfig mConfig) {
+        this.mConfig = mConfig;
     }
 }
